@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite it together with the attached paper."
+authors:
+- family-names: "Morgillo"
+  given-names: "Angela Rosy"
+  orcid: "https://orcid.org/0009-0006-6142-0692"
+- family-names: "Roncallo"
+  given-names: "Simone"
+  orcid: "https://orcid.org/0000-0003-3506-9027"
+title: "Quantum optical neuron"
+version: 2.0.4
+date-released: 2024-04-12
+url: "https://github.com/simoneroncallo/quantum-optical-neuron"
