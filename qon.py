@@ -1,6 +1,7 @@
 # This module contains all the functions to simulate and train 
 # the quantum optical neuron, modelled by a spatial light modulator
 
+import collections
 import numpy as np
 from typing import Callable
 
@@ -13,11 +14,26 @@ def sigPrime(x):
   """ Compute the sigmoid derivative, with input x. """
   return sig(x)*(1-sig(x))*11
 
-def neuron(weights, bias, Img):
+# def neuron(weights, bias, Img):
+#   """ Compute the output of the quantum optical neuron, with parameters 
+#       weights and bias, and input Img. """
+#   norm = np.sqrt(np.sum(np.square(weights)))
+#   f = np.abs(np.sum(np.multiply(Img, weights/norm)))**2
+#   return sig(f + bias)
+
+def neuron(weights, bias, Img, num_shots):
   """ Compute the output of the quantum optical neuron, with parameters 
-      weights and bias, and input Img. """
+      weights and bias, and input Img. The predicted probability is sampled
+      for a given number of shots (deactived by choosing shots = -1). """
   norm = np.sqrt(np.sum(np.square(weights)))
-  f = np.abs(np.sum(np.multiply(Img, weights/norm)))**2
+  prob = np.abs(np.sum(np.multiply(Img, weights/norm)))**2
+  # Sampling (1: Coincidence)
+  if num_shots == -1:
+      f = prob
+  else:
+      samples = np.random.choice([0, 1], num_shots, p = [1 - prob, prob])
+      counter = collections.Counter(samples)
+      f = counter[1]/num_shots
   return sig(f + bias)
 
 def loss(output, target):
@@ -105,10 +121,10 @@ def update_rule(weights, bias, lossWeightsDerivatives, lossBiasDerivatives,\
 
 def optimization(loss_derivative: Callable, weights, bias, targets,\
                  test_targets, trainImgs, testImgs, num_epochs,\
-                 lrWeights, lrBias):
+                 lrWeights, lrBias, num_shots):
   """ Gradient descent optimization. """
   # Training set
-  outputs = np.array([ neuron(weights, bias, trainImgs[idx,:,:]) \
+  outputs = np.array([ neuron(weights, bias, trainImgs[idx,:,:], num_shots) \
                          for idx in range(trainImgs.shape[0])] )
 
   losses = np.array([ loss(outputs[idx], targets[idx]) \
@@ -129,8 +145,8 @@ def optimization(loss_derivative: Callable, weights, bias, targets,\
         weights, bias, trainImgs[idx,:,:])
 
   # Validation set
-  test_outputs = np.array([ neuron(weights, bias, testImgs[idx,:,:]) \
-                         for idx in range(testImgs.shape[0])] )
+  test_outputs = np.array([ neuron(weights, bias, testImgs[idx,:,:],\
+                         num_shots) for idx in range(testImgs.shape[0])] )
   test_losses = np.array([ loss(test_outputs[idx], test_targets[idx]) \
                      for idx in range(test_outputs.shape[0])])
 
@@ -148,13 +164,13 @@ def optimization(loss_derivative: Callable, weights, bias, targets,\
 
   for epoch in range(num_epochs):
     # Update weights
-    weights, bias = update_rule(weights, bias, \
-                              lossWeightsDerivatives, lossBiasDerivatives, \
+    weights, bias = update_rule(weights, bias,\
+                              lossWeightsDerivatives, lossBiasDerivatives,\
                                 lrWeights, lrBias)
 
     ## Training set
     # Update outputs
-    outputs = np.array([ neuron(weights, bias, trainImgs[idx,:,:]) \
+    outputs = np.array([ neuron(weights, bias, trainImgs[idx,:,:], num_shots)\
                          for idx in range(trainImgs.shape[0])] )
     # Update loss
     losses = np.array([ loss(outputs[idx], targets[idx]) \
@@ -166,8 +182,8 @@ def optimization(loss_derivative: Callable, weights, bias, targets,\
 
     ## Validation set
     # Update outputs
-    test_outputs = np.array([ neuron(weights, bias, testImgs[idx,:,:]) \
-                         for idx in range(testImgs.shape[0])] )
+    test_outputs = np.array([ neuron(weights, bias, testImgs[idx,:,:],\
+                              num_shots) for idx in range(testImgs.shape[0])] )
     # Update loss
     test_losses = np.array([ loss(test_outputs[idx], test_targets[idx]) \
                         for idx in range(test_outputs.shape[0])])
