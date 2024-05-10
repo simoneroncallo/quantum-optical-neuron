@@ -14,13 +14,6 @@ def sigPrime(x):
   """ Compute the sigmoid derivative, with input x. """
   return sig(x)*(1-sig(x))*11
 
-# def neuron(weights, bias, Img):
-#   """ Compute the output of the quantum optical neuron, with parameters 
-#       weights and bias, and input Img. """
-#   norm = np.sqrt(np.sum(np.square(weights)))
-#   f = np.abs(np.sum(np.multiply(Img, weights/norm)))**2
-#   return sig(f + bias)
-
 def neuron(weights, bias, Img, num_shots):
   """ Compute the output of the quantum optical neuron, with parameters 
       weights and bias, and input Img. The predicted probability is sampled
