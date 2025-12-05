@@ -1,0 +1,12 @@
+# Ignore hidden files and directories
+**/.*
+
+# Ignore python cache
+**/__pycache__/
+
+# Ignore data
+data/
+
+# Ignore backups
+*.bac
+*.bak
